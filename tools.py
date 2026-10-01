@@ -1,25 +1,4 @@
-"""
-The three FitFindr tools.
-
-Each one is a standalone function you can call and test on its own, before any
-of them are wired into the loop. Build and test them one at a time — three
-untested tools joined by a loop is one problem that looks like six, because you
-can't tell which layer is lying to you.
-
-    search_listings(description, size, max_price)  → list[dict]
-    suggest_outfit(new_item, wardrobe)             → str
-    create_fit_card(outfit, new_item)              → str
-
-All three are stubs right now. They run and they do nothing — that's the
-starting position and it's deliberate.
-
-⚠️ Before you write any of them, fill in the **Tool Inventory** section of your
-README (Milestone 2). Four lines per tool: what it does, each input with its
-type, exactly what it returns, and what it returns when it has nothing to give.
-That last line is what your loop branches on. "Returns a list" earns nothing —
-the description has to say what is *in* the list.
-"""
-
+import re
 import config  # noqa: F401 — you'll use this in search_listings
 from generate import generate
 from utils.data_loader import load_listings
@@ -78,8 +57,46 @@ def search_listings(
     Test it from a terminal before you move on:
         python -c "from tools import search_listings; print(search_listings('graphic tee', max_price=30))"
     """
-    # TODO: replace this with your implementation
-    return []
+    # Step 1: Load every listing with load_listings().
+    listings = load_listings()
+
+    # Step 2: Filter by max_price, when provided.
+    if max_price is not None:
+        listings = [l for l in listings if l["price"] <= max_price]
+
+    # Whole-token match, so "M" matches "S/M" but not "XL (oversized)".
+    if size is not None:
+        target = size.strip().upper()
+        matched = []
+        for listing in listings:
+            tokens = re.split(r"[\s/()]+", listing["size"].upper())
+            tokens = [t for t in tokens if t]
+            if target in tokens:
+                matched.append(listing)
+        listings = matched
+
+    # Step 3: Score what's left by keyword overlap with `description`.
+    desc_words = set(re.findall(r"\w+", description.lower()))
+
+    scored = []
+    for listing in listings:
+        haystack = " ".join([
+            listing["title"],
+            listing["description"],
+            " ".join(listing["style_tags"]),
+        ]).lower()
+        haystack_words = set(re.findall(r"\w+", haystack))
+        score = len(desc_words & haystack_words)
+
+        # Step 4: Drop anything scoring zero.
+        if score > 0:
+            scored.append((score, listing))
+
+    # Step 5: Sort by score, highest first, and return the listing dicts,
+    # at most config.SEARCH_RESULT_LIMIT of them.
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    results = [listing for _, listing in scored]
+    return results[: config.SEARCH_RESULT_LIMIT]
 
 
 # ── Tool 2: suggest_outfit ────────────────────────────────────────────────────
@@ -112,8 +129,42 @@ def suggest_outfit(new_item: dict, wardrobe: dict) -> str:
     Test it from a terminal before you move on:
         python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
     """
-    # TODO: replace this with your implementation
-    return ""
+    items = wardrobe.get("items") or []
+
+    item_description = (
+        f"{new_item['title']} ({new_item['category']}, "
+        f"{', '.join(new_item['colors'])}, "
+        f"style: {', '.join(new_item['style_tags'])})"
+    )
+
+    # Step 1 + 2: empty wardrobe, general advice.
+    if not items:
+        prompt = (
+            f"Someone is considering buying this thrifted item:\n"
+            f"{item_description}\n\n"
+            f"They don't have any wardrobe items saved yet. Give them one or "
+            f"two general outfit ideas for how to style this piece, using "
+            f"common wardrobe basics a person might already own. Keep it to "
+            f"2-3 sentences."
+        )
+    # Step 3: real wardrobe, specific combinations.
+    else:
+        wardrobe_lines = "\n".join(
+            f"- {it['name']} ({it['category']}, {', '.join(it['colors'])}, "
+            f"style: {', '.join(it['style_tags'])})"
+            for it in items
+        )
+        prompt = (
+            f"Someone is considering buying this thrifted item:\n"
+            f"{item_description}\n\n"
+            f"Here is their current wardrobe:\n{wardrobe_lines}\n\n"
+            f"Suggest one or two outfits that pair the new item with pieces "
+            f"they already own. Name the specific pieces from their wardrobe. "
+            f"Keep it to 2-3 sentences."
+        )
+
+    # Step 4: call the model and return its response.
+    return generate(prompt)
 
 
 # ── Tool 3: create_fit_card ───────────────────────────────────────────────────
@@ -152,5 +203,28 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
     Test it from a terminal before you move on:
         python -c "from tools import create_fit_card; from utils.data_loader import load_listings; print(create_fit_card('jeans and white sneakers', load_listings()[0]))"
     """
-    # TODO: replace this with your implementation
-    return ""
+    # Step 1: guard against empty or whitespace-only outfit.
+    if not outfit or not outfit.strip():
+        return (
+            f"{new_item['title']} — ${new_item['price']:.2f} on "
+            f"{new_item['platform']}. No outfit details available yet."
+        )
+
+    # Step 2: build the prompt.
+    brand_part = f"by {new_item['brand']} " if new_item.get("brand") else ""
+    prompt = (
+        f"Write a short, casual social-media caption (2-4 sentences) for a "
+        f"thrifted fashion find someone is posting about. Write it like a "
+        f"real person posting, not a product listing.\n\n"
+        f"Item: {new_item['title']} {brand_part}"
+        f"({new_item['condition']} condition, {', '.join(new_item['colors'])})\n"
+        f"Price: ${new_item['price']:.2f}\n"
+        f"Platform: {new_item['platform']}\n"
+        f"Outfit idea: {outfit}\n\n"
+        f"Mention the price and the platform naturally, once each. Capture "
+        f"the vibe of the piece specifically, don't write something generic "
+        f"enough to apply to any item."
+    )
+
+    # Step 3: call the model and return its response.
+    return generate(prompt)
