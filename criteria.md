@@ -25,9 +25,9 @@ Given a query that matches at least one listing, the agent completes all three
 tool calls and returns a fit card — in at least 4 of 5 tries.
 
 **Why this target:**
-<!-- Why 4 of 5 and not 5 of 5? Something about your search, probably —
-     "my search is a plain keyword match and some phrasings will miss" is a
-     real answer. -->
+My search matches on keyword overlap, not meaning, so a differently worded
+query can miss an item that's actually there. 4 of 5 allows for that without
+excusing a search that fails most of the time.
 
 ---
 
@@ -37,66 +37,43 @@ Given a query that matches no listings, the agent stops before calling
 `suggest_outfit` and returns a message naming what to change — 5 of 5 tries.
 
 **Why this target:**
-<!-- Why is 5 of 5 reasonable here when criterion 1 isn't? What's different
-     about this path? -->
+This branch is a plain if statement with nothing random involved. If
+search_results is empty, it stops every time, so 5 of 5 is the honest target.
 
 ---
 
-## 3. Something about state
+## 3. The selected item stays the same from search to suggest_outfit
 
-<!-- YOU WRITE THIS ONE.
+For 5 different queries that match something, the id of session["selected_item"]
+is exactly the same id that gets passed into suggest_outfit, in 5 of 5 tries.
 
-     How would you know that the item your search found is the same item the
-     next tool received? Name something countable or observable.
-
-     This is the criterion people find hardest, because state failure doesn't
-     look like state failure — it looks like a tool problem. Something that
-     compares session["selected_item"] against what actually reached
-     suggest_outfit is the shape you're after. -->
-
-
-
-**Why this target:**
-
-
+**Why this target:** This is just passing a value through the session, with
+nothing random involved. If it does fail even once, that is a real bug in 
+how the session is built, not something caused by model variation.
 
 ---
 
-## 4. Something about the fit card
+## 4. The fit card always mentions the price and the platform
 
-<!-- YOU WRITE THIS ONE.
+For 5 different items, the fit card text mentions the item's price at least
+once and its platform (depop, thredUp, or poshmark) at least once, in 5 of 5
+tries.
 
-     The fit card calls a model, so the same input can produce different words
-     each time. That's not a bug — it's the nature of the tool. So what would
-     make it acceptable?
-
-     Think about what you'd actually be unhappy to see. A caption that never
-     mentions the price? Two different items producing the same opening
-     sentence? A card longer than a caption anyone would post? Any of those can
-     be turned into a number. -->
-
-
-
-**Why this target:**
-
-
+**Why this target:** The wording can vary since the model isn't deterministic, 
+but price and platform are fed directly into the prompt, so there's no reason 
+the model should ever drop them.
 
 ---
 
-## 5. Your choice
+## 5. An empty wardrobe still gets a usable suggestion
 
-<!-- YOU WRITE THIS ONE TOO.
+For 5 runs with an empty wardrobe (using --empty-wardrobe), suggest_outfit
+returns a non-empty string with real styling advice, not an error and not a
+blank string, in 5 of 5 tries.
 
-     Pick something you actually care about getting right. Speed, the empty
-     wardrobe path, what happens when the model can't be reached, whether the
-     search respects a price ceiling — anything, as long as it names a number
-     or an observable outcome. -->
-
-
-
-**Why this target:**
-
-
+**Why this target:** An empty wardrobe is a normal, expected case, not an
+edge case. The tool is built to handle it directly, so there's no reason it
+should fail once that logic is in place.
 
 ---
 
