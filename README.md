@@ -47,59 +47,38 @@
 
 ## Tool Inventory
 
-<!-- Four lines per tool. This is worth 2 points and it's the single most
-     common place students lose them.
-
-     "Returns a list" earns NOTHING. The description has to say what is IN
-     the list.
-
-     The empty case isn't optional either — it's the thing your loop branches
-     on, and if you don't decide it here you'll discover it as a crash in
-     Milestone 5. -->
-
 ### `search_listings`
 
-- **What it does:**
-- **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Searches the 40 listings for items matching a description (by keyword overlap), and can also filter by size and a max price.
+- **Inputs:** `description` (str): keywords describing what the user wants, like "vintage graphic tee". `size` (str, optional): a size string to filter by, like "M". `max_price` (float, optional): the highest price allowed, inclusive.
+- **Returns:** A list of listing dicts, best match first. Each one has `id`, `title`, `description`, `category`, `style_tags`, `size`, `condition`, `price`, `colors`, `brand`, `platform`. At most `SEARCH_RESULT_LIMIT` (10) results.
+- **When it has nothing:** Returns an empty list (`[]`). Never `None`, never an error.
 
 ### `suggest_outfit`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Takes the item that was found plus the user's wardrobe, and asks the model to suggest how to style it with things the user already owns. If the wardrobe is empty, it gives general styling advice instead.
+- **Inputs:** `new_item` (dict): a listing dict. `wardrobe` (dict): has an `items` key holding a list of wardrobe items, which may be empty.
+- **Returns:** A non-empty string with outfit suggestions.
+- **When it has nothing:** If `wardrobe["items"]` is empty, it returns general styling advice instead of failing or returning an empty string.
 
 ### `create_fit_card`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Writes a short caption, two to four sentences, someone would actually post about the find. Mentions the item, the price, and the platform once each.
+- **Inputs:** `outfit` (str): the suggestion text from `suggest_outfit`. `new_item` (dict): the listing dict for the item.
+- **Returns:** A 2 to 4 sentence caption string.
+- **When it has nothing:** If `outfit` is empty or just whitespace, it returns a simple fallback message instead of raising an error.
 
 ---
 
 ## Planning Loop
 
-<!-- Your branch rule, stated as a rule — the condition AND both paths — plus
-     the file and function that holds it.
-
-     Like this:
-       "If search_listings returns an empty list, put a message in the session
-        and stop. Otherwise take the first result and go to suggest_outfit."
-        — agent.py::run_agent
-
-     The grader checks your code against what you claim here, so the file and
-     function have to be real. -->
-
-**Branch rule:**
+**Branch rule:** If `search_listings` returns an empty list, put a message in `session["error"]` that tells the user what to change (loosen the price limit, try different words, or drop the size filter), and return the session right away. Do not call `suggest_outfit`. If `search_listings` finds something, take the first result as `session["selected_item"]` and move on to `suggest_outfit`.
 
 **Where it lives:** `agent.py::run_agent`
 
-**How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
+**How the query is parsed:** Regex. The max price comes from a pattern like `under \$(\d+(\.\d+)?)`. The size comes from a pattern like `size\s+(\S+)`. Whatever text is left after removing those becomes the description.
 
-**What moves through the session:** <!-- which fields, in what order -->
+**What moves through the session:** `query` goes in first, then `parsed` (description, size, max_price), then `search_results`, then `selected_item`, then `outfit_suggestion`, then `fit_card`.
 
 ---
 
