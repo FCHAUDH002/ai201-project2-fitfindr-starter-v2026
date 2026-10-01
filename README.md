@@ -20,28 +20,11 @@
 
 ---
 
-<!-- ─────────────────────────────────────────────────────────────────────────
-     HOW TO USE THIS FILE
-
-     This is your submission. Fill each section in as you finish the milestone
-     it belongs to — don't leave it all to the end.
-
-     Unit 3 asks for the first five sections. Unit 4 adds the five below them.
-     Leave the unit 4 sections alone until then; they're here so you know
-     what's coming.
-
-     Everything is pasted as TEXT. No screenshots, no images, no video links.
-     A typed block of output gets full credit; a picture of the same output
-     gets none.
-     ───────────────────────────────────────────────────────────────────────── -->
-
 <!-- ═══════════════════════ UNIT 3 — THE BUILD ═══════════════════════ -->
 
 ## What This Does
 
-<!-- Three or four sentences: what a user asks for, and what they get back. -->
-
-
+FitFindr helps with the thrifting process by acting on a plain-language request. A user types something like "vintage graphic tee under $30, size M" and the agent searches a set of thrifted listings for matches, picks the best one, and asks the model to suggest how to style it using pieces the user already owns. It then writes a short caption the user could actually post about the find, mentioning the price and platform. If nothing in the listings matches, the agent stops and tells the user what to change instead of guessing.
 
 ---
 
@@ -76,7 +59,7 @@
 
 **Where it lives:** `agent.py::run_agent`
 
-**How the query is parsed:** Regex. The max price comes from a pattern like `under \$(\d+(\.\d+)?)`. The size comes from a pattern like `size\s+(\S+)`. Whatever text is left after removing those becomes the description.
+**How the query is parsed:** Regex. The max price is pulled out with a pattern that catches several phrasings ("under $30", "below $30", "max $30", "up to $30", or just "$30" on its own). The size is pulled out with a pattern that matches a whole word right after "size" (like "size M" or "size US 9"), plus a second pattern that catches a bare size at the end of the query with no word "size" in front of it (like "...graphic tee, M"). Whatever text is left after removing those becomes the description.
 
 **What moves through the session:** `query` goes in first, then `parsed` (description, size, max_price), then `search_results`, then `selected_item`, then `outfit_suggestion`, then `fit_card`.
 
@@ -139,24 +122,17 @@ Still can’t believe I scored these vintage 501s for just $38. The medium wash 
 
 ## How I Used AI
 
-<!-- Two specific moments. What you asked, what came back, what you changed.
-
-     "I used Claude to help me code" is not enough.
-
-     "I gave Claude my search_listings spec. It returned None on no match
-     instead of an empty list, so I changed it" is the level we want. -->
-
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Help figuring out how to match a size filter like "M" against the listings data without false-matching unrelated sizes.
+- *What came back:* A plain substring check would match "M" inside "XL" and inside sizes like "US 9", because those letters appear as substrings. The fix was to split each listing's size string into whole tokens (splitting on spaces, slashes, and parentheses) and check for an exact token match instead.
+- *What I changed:* Rewrote the size filter in search_listings to split on `[\s/()]+` and compare against the resulting tokens, rather than using `in` for substring containment.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Help understanding why create_fit_card returned the exact same caption twice in a row when I ran it on the same item.
+- *What came back:* Two possible causes, both in config.py: CACHE_ENABLED reusing an answer to an identical prompt, or TEMPERATURE being set to 0.0. Since I hadn't changed either setting, it was almost certainly the cache reusing a response to an identical prompt.
+- *What I changed:* Nothing in the code. I confirmed it by running the same tool with a different outfit pairing as input, which produced genuinely different wording, confirming the tool itself was working correctly and the repeat was just the cache doing its job.
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
