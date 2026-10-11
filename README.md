@@ -134,10 +134,7 @@ Still can’t believe I scored these vintage 501s for just $38. The medium wash 
 - *What came back:* Two possible causes, both in config.py: CACHE_ENABLED reusing an answer to an identical prompt, or TEMPERATURE being set to 0.0. Since I hadn't changed either setting, it was almost certainly the cache reusing a response to an identical prompt.
 - *What I changed:* Nothing in the code. I confirmed it by running the same tool with a different outfit pairing as input, which produced genuinely different wording, confirming the tool itself was working correctly and the repeat was just the cache doing its job.
 
-<!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
-
-     Don't fill these in during unit 3.
-     ═══════════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════ -->
 
 ---
 
@@ -203,34 +200,50 @@ that produced it:
 
 ## Loop Trace
 
-<!-- One full run, printed step by step, with the MCP call visible in it.
-
-     `python app.py ask '...' --trace` once you've added the trace.step()
-     calls in Milestone 2.
-
-     Worth pasting BOTH the happy path and the empty-search path. The empty
-     one should be visibly shorter, because it stops. If your two traces are
-     the same length, your branch isn't working — and this is the fastest way
-     anyone will ever find that out. -->
-
 **Happy path**
 
 ```
-
+$ python app.py ask 'vintage graphic tee under $30' --trace
+[1] parse_query
+      in:  vintage graphic tee under $30
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 10 items: Y2K Baby Tee — Butterfly Print, Graphic Tee — 2003 Tour Bootleg Style, Vintage Band Tee — Faded Grey … +7 more
+      →    10 match(es)
+[3] select_item
+      out: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+[4] suggest_outfit
+      in:  Y2K Baby Tee — Butterfly Print ($18.0, depop)
+      out: Pair the Y2K baby tee with your baggy straight-leg jeans and chunky white sneakers for an effortless, …
+      →    10 wardrobe item(s)
+[5] create_fit_card
+      in:  Y2K Baby Tee — Butterfly Print ($18.0, depop)
+      out: Found the ultimate Y2K butterfly baby tee and I'm literally obsessed. 🦋 Picked it up on Depop for just $18 and…
+      
 ```
 
 **Empty search**
 
 ```
-
+$ python app.py ask 'designer ballgown size XXS under $5' --trace
+[1] parse_query
+      in:  designer ballgown size XXS under $5
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+      →    0 match(es)
+[3] branch
+      →    search returned []: stopping before suggest_outfit
 ```
 
-**On the MCP move:** <!-- what changed in your code, and whether anything
-behaved differently afterwards. If the rewire didn't work, say exactly where it
-broke — the error text and the last thing that worked. That earns the point in
-full. -->
+**On the MCP move:** 
 
-
+search_listings now goes through mcp_server.py instead of being called
+directly. To confirm it was really using MCP and not falling back, I added a
+print to the except block, nothing printed, so MCP worked. The output matched
+the direct call from unit 3 exactly, which is what we want.
 
 ---
 
