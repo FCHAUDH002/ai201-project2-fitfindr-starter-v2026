@@ -323,11 +323,18 @@ running again.
 
 ## What's Still Broken
 
-<!-- For each criterion still missed: what you'd do, and why you stopped where
-     you did. "I ran out of time" is fine if it's true. Pretending nothing is
-     left is not. -->
+Nothing failed in this round of testing, but there's still room to improve.
 
+My search only matches on exact words, now with basic plural handling
+added. It still can't tell that "old band shirt" and "vintage graphic tee"
+mean roughly the same thing, since there's no real synonym matching. A
+better fix would be a small list of related words, or having the model pull
+out search terms instead of using regex.
 
+My criteria mostly test the normal cases and the one required branch. I
+never tested what happens if a wardrobe item is missing a field, like
+colors, which could break suggest_outfit when it builds the prompt. None of
+my five criteria covered this, and I ran out of time to add one.
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
