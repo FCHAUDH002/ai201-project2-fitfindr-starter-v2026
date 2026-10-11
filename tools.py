@@ -76,7 +76,7 @@ def search_listings(
         listings = matched
 
     # Step 3: Score what's left by keyword overlap with `description`.
-    desc_words = set(re.findall(r"\w+", description.lower()))
+    desc_words = {w.rstrip("s") for w in re.findall(r"\w+", description.lower())}
 
     scored = []
     for listing in listings:
@@ -85,7 +85,7 @@ def search_listings(
             listing["description"],
             " ".join(listing["style_tags"]),
         ]).lower()
-        haystack_words = set(re.findall(r"\w+", haystack))
+        haystack_words = {w.rstrip("s") for w in re.findall(r"\w+", haystack)}
         score = len(desc_words & haystack_words)
 
         # Step 4: Drop anything scoring zero.
