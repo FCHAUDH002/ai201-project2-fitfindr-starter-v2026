@@ -218,33 +218,21 @@ out: Pair this cropped denim jacket with a classic white t-shirt and high-waiste
 
 ## Verdicts and Diagnoses
 
-<!-- MET or MISSED per criterion against LAST UNIT's target, plus a sentence on
-     how you decided.
-
-     Then, for every miss: which of the four places it happened — a tool, the
-     loop's branch, the session, or the model's output — AND the mechanism.
-
-     Not a diagnosis:  "The fit card was bad."
-     A diagnosis:      "The fit card criterion missed on 2 of 5 items. Both had
-                        an empty brand field. My prompt puts the brand in the
-                        first sentence, so the card opened with a blank and read
-                        like a fragment. The tool worked; the prompt assumed a
-                        field that isn't always there."
-
-     Look for a pattern. Three misses on the same tool is one problem, not
-     three. -->
-
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| 1 | Matching query completes all three tools | 4 of 5 | MET | 5/5 passes, counted against the 4-of-5 target |
+| 2 | Impossible query stops before second tool | 5 of 5 | MET | 5/5 passes, branch triggered every time |
+| 3 | Selected item matches suggest_outfit input | 5 of 5 | MET | 5/5 passes, same id at both trace steps every time |
+| 4 | Fit card mentions price and platform | 5 of 5 | MET | 5/5 passes, both facts present every time |
+| 5 | Empty wardrobe gets usable suggestion | 5 of 5 | MET | 5/5 passes, non-empty general advice every time |
+
 
 **Diagnoses**
 
-
+Nothing was missed, so there's nothing to diagnose in the usual sense. But
+criterion 1's test was weak. It reused the same query five times instead of
+testing different phrasings, so the 5/5 doesn't really prove the search
+handles varied wording. That's the one I'd tighten.
 
 ---
 
