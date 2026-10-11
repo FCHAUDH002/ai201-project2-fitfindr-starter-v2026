@@ -140,27 +140,77 @@ Still can’t believe I scored these vintage 501s for just $38. The medium wash 
 
 ## Run Log — Before
 
-<!-- Five criteria, five tries each, in this exact format.
-
-     Five, because your criteria are written out of five. Mark each try PASS
-     or FAIL, count the passes, and read that count against your target — a
-     row targeting 4 of 5 with three PASS cells is MISSED (3/5).
-
-     `python run_eval.py --label before` runs everything and writes the table
-     into results/. Paste it here and fill in the verdicts. -->
-
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. Matching query completes all three tools | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 2. Impossible query stops before second tool | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. Selected item matches suggest_outfit input | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. Fit card mentions price and platform | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. Empty wardrobe gets usable suggestion | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Real output from one try**, pasted as text, naming the file and function
-that produced it:
+**Real output from one try**
 
 ```
+**Criterion 1** — `tools.py::search_listings`, `agent.py::run_agent`
+
+$ python -c “...” (from run_eval.py, scenario: matching query completes, try 1)
+[1] parse_query
+in: vintage graphic tee under $30
+out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+in: dict with keys: description, size, max_price
+out: 10 items: Y2K Baby Tee — Butterfly Print, Graphic Tee — 2003 Tour Bootleg Style, Vintage Band Tee — Faded Grey … +7 more
+→ 10 match(es)
+[3] select_item
+out: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+[4] suggest_outfit
+in: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+out: Pair the butterfly baby tee with your baggy dark-wash jeans and chunky white sneakers for an effortless, authentic Y2K streetwear look. Layer the black cropped zip hoodie over top on cooler days to complete the vintage aesthetic.
+→ 10 wardrobe item(s)
+[5] create_fit_card
+in: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+out: Found the ultimate Y2K butterfly baby tee and I’m actually obsessed with the purple and pink print. Snagged it on Depop for just $18 and it looks completely brand new. Ready to live out my early 2000s pop star dreams in this.
+
+
+**Criterion 2** — `agent.py::run_agent` (the branch)
+
+$ python -c “...” (from run_eval.py, scenario: impossible query stops early, try 1)
+[1] parse_query
+in: designer ballgown size XXS under $5
+out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+in: dict with keys: description, size, max_price
+out: [] (empty)
+→ 0 match(es)
+[3] branch
+→ search returned []: stopping before suggest_outfit
+
+
+**Criterion 3** — `agent.py::run_agent` (session state)
+
+$ python -c “...” (from run_eval.py, scenario: selected item matches what suggest_outfit received, try 1)
+[3] select_item
+out: Denim Jacket — Light Wash, Cropped ($42.0, poshmark)
+[4] suggest_outfit
+in: Denim Jacket — Light Wash, Cropped ($42.0, poshmark)
+out: Outfit 1: Pair the new light wash denim jacket with the white ribbed tank top and baggy dark wash straight-leg jeans for a classic, high-contrast “denim on denim” look. Finish the outfit with your chunky white sneakers and black crossbody bag for a casual streetwear vibe.
+
+
+**Criterion 4** — `tools.py::create_fit_card`
+
+$ python -c “...” (from run_eval.py, scenario: fit card mentions price and platform, try 1)
+[5] create_fit_card
+in: Platform Sneakers — White Chunky Sole ($48.0, poshmark)
+out: Finally scored these chunky platform sneaks on Poshmark and I’m obsessed. Got them for $48 and they are seriously in pristine condition. Can’t wait to style them with baggy denim and a little baby tee for the ultimate Y2K moment.
+
+
+**Criterion 5** — `tools.py::suggest_outfit` (empty wardrobe branch)
+
+$ python -c “...” (from run_eval.py, scenario: empty wardrobe, try 1)
+[4] suggest_outfit
+in: Denim Jacket — Light Wash, Cropped ($42.0, poshmark)
+out: Pair this cropped denim jacket with a classic white t-shirt and high-waisted black leggings or straight-leg trousers for an effortless, balanced silhouette. Complete the look with your favorite white sneakers or chunky boots for a casual, streetwear-ready vibe.
+→ 0 wardrobe item(s)
 
 ```
 
