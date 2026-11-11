@@ -275,3 +275,5 @@ curl -X POST http://localhost:5001/ask -H 'Content-Type: application/json' -d '{
 Every request writes one line to logs/requests.jsonl with the timestamp, query, outcome, status, duration in seconds, and tokens used.
 
 For measuring, start with the cache off: `AI201_CACHE=0 PORT=5001 python serve.py`
+
+If `python` doesn't work inside the venv, use `python3`. If you get "Address already in use," another copy of the server is still running on that port. Stop it with Ctrl-C, or pick a different PORT.
