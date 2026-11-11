@@ -39,6 +39,7 @@ import threading
 import json
 import time
 from datetime import datetime, timezone
+import generate
 
 # config first, and before anything that talks to the model: it loads your .env
 # and fixes the Windows console encoding for every module that imports it.
@@ -159,19 +160,21 @@ def ask():
     failure = None
     session = None
     with _one_at_a_time:
+        before = generate.token_counts()["total"]
         try:
             session = run_agent(query, wardrobe)
-        except Exception as exc:  # noqa: BLE001 — a 500 with a sentence beats a hang
+        except Exception as exc:  # noqa: BLE001
             failure = f"{type(exc).__name__}: {exc}"
+        tokens_used = generate.token_counts()["total"] - before
 
     # Outside the lock: building a response is not work the next caller should
     # be waiting on.
     if failure is not None:
-        log_request(query, "crashed", started, 500, error=failure)
+        log_request(query, "crashed", started, 500, tokens=tokens_used, error=failure)
         return jsonify({"error": failure}), 500
 
     outcome = "stopped_early" if session["error"] else "completed"
-    log_request(query, outcome, started, 200, error=session["error"])
+    log_request(query, outcome, started, 200, tokens=tokens_used, error=session["error"])
     return jsonify(session)
 
 
