@@ -36,6 +36,9 @@ what belongs in one — and the timing field is the one everybody skips.
 import os
 import sys
 import threading
+import json
+import time
+from datetime import datetime, timezone
 
 # config first, and before anything that talks to the model: it loads your .env
 # and fixes the Windows console encoding for every module that imports it.
@@ -48,6 +51,21 @@ from utils.data_loader import get_example_wardrobe
 
 app = Flask(__name__)
 
+LOG_PATH = config.ROOT / "logs" / "requests.jsonl"
+
+def log_request(query, outcome, started, status, tokens=None, error=None):
+    LOG_PATH.parent.mkdir(exist_ok=True)
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "query": query,
+        "outcome": outcome,
+        "status": status,
+        "duration_s": round(time.time() - started, 2),
+        "tokens": tokens,
+        "error": error,
+    }
+    with open(LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record) + "\n")
 
 # ── one request at a time ─────────────────────────────────────────────────────
 # Here's why this exists.
@@ -107,10 +125,12 @@ def ask():
                                                 example wardrobe the CLI uses.
     Out:  the session dict from run_agent(), as JSON.
     """
+    started = time.time()
+    
     payload = request.get_json(silent=True) or {}
     query = (payload.get("query") or "").strip()
     if not query:
-        # 400 rather than a stack trace: the caller can act on this one.
+        log_request(query, "bad_request", started, 400, error="missing query")
         return jsonify({"error": "Send JSON with a 'query' field, e.g. "
                                  '{"query": "vintage graphic tee under $30"}'}), 400
 
@@ -147,8 +167,11 @@ def ask():
     # Outside the lock: building a response is not work the next caller should
     # be waiting on.
     if failure is not None:
+        log_request(query, "crashed", started, 500, error=failure)
         return jsonify({"error": failure}), 500
 
+    outcome = "stopped_early" if session["error"] else "completed"
+    log_request(query, outcome, started, 200, error=session["error"])
     return jsonify(session)
 
 
