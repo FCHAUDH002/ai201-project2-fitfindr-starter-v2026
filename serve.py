@@ -27,10 +27,10 @@ web server has to be. The reason is worth reading before you deploy: see the
 note above `_one_at_a_time` below — it also decides which gunicorn worker you
 can use.
 
-⚠️ There is deliberately NO logging, NO timing and NO request counting in this
-file. That is unit 9's follow-along: you instrument this yourself, first, and
-then deploy it. A structured log you were handed teaches you nothing about
-what belongs in one — and the timing field is the one everybody skips.
+Capstone: logging and timing were added to this file. Every request to /ask
+writes one record to logs/requests.jsonl with the timestamp, the query, the
+outcome, the status code, how long it took, and how many tokens it used. This
+includes failed requests (bad input and crashes), not just successful ones.
 """
 
 import os
