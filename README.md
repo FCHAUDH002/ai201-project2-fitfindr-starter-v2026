@@ -350,3 +350,25 @@ This extends FitFindr. The agent itself will stay the same. What will be new is 
 Shape A: deploy and instrument. Before, FitFindr only ran in my terminal. It will run as a small web service, and each request will be saved to a log file with the time, the query, what happened, and how long it took. I'm running it locally (Path B), not hosting it.
 
 Out of scope: I'm not adding new tools or changing how search works. I'm not hosting it online. I'm not timing each individual tool, only the whole request. I'm also leaving the rate limiting and cache alone.
+## Running It
+
+I run FitFindr as a local web service (Path B). The start command and setup steps are in RUNNING.md. I tested them from a clean clone of my repo, and they worked.
+
+## Instrumentation
+
+Every request to /ask writes one line to logs/requests.jsonl. Each record has the timestamp, the query, the outcome (completed, stopped_early, bad_request, or crashed), the status code, how long it took in seconds, how many tokens it used, and the error message if there was one. Failed requests get a record too, not just successful ones.
+
+Here are ten entries from a real run with the cache off:
+
+```json
+{"timestamp": "2026-11-11T21:52:27.458334+00:00", "query": "vintage graphic tee under $30", "outcome": "completed", "status": 200, "duration_s": 3.15, "tokens": 591, "error": null}
+{"timestamp": "2026-11-11T21:52:29.302998+00:00", "query": "denim jacket under $50", "outcome": "completed", "status": 200, "duration_s": 1.81, "tokens": 576, "error": null}
+{"timestamp": "2026-11-11T21:52:31.887311+00:00", "query": "platform sneakers size 8", "outcome": "completed", "status": 200, "duration_s": 2.55, "tokens": 578, "error": null}
+{"timestamp": "2026-11-11T21:52:34.114407+00:00", "query": "90s track jacket in size M", "outcome": "completed", "status": 200, "duration_s": 2.19, "tokens": 702, "error": null}
+{"timestamp": "2026-11-11T21:52:36.264742+00:00", "query": "silk slip dress in midi length under $40", "outcome": "completed", "status": 200, "duration_s": 2.12, "tokens": 699, "error": null}
+{"timestamp": "2026-11-11T21:52:38.415507+00:00", "query": "vintage graphic tee under $25", "outcome": "completed", "status": 200, "duration_s": 2.12, "tokens": 580, "error": null}
+{"timestamp": "2026-11-11T21:52:40.564581+00:00", "query": "denim jacket under $45", "outcome": "completed", "status": 200, "duration_s": 2.11, "tokens": 562, "error": null}
+{"timestamp": "2026-11-11T21:53:26.630529+00:00", "query": "platform sneakers size 9", "outcome": "completed", "status": 200, "duration_s": 46.03, "tokens": 560, "error": null}
+{"timestamp": "2026-11-11T21:53:28.901296+00:00", "query": "oversized flannel shirt", "outcome": "completed", "status": 200, "duration_s": 2.23, "tokens": 638, "error": null}
+{"timestamp": "2026-11-11T21:53:30.949215+00:00", "query": "leather belt under $20", "outcome": "completed", "status": 200, "duration_s": 2.01, "tokens": 545, "error": null}
+```
