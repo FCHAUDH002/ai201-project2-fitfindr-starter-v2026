@@ -372,3 +372,11 @@ Here are ten entries from a real run with the cache off:
 {"timestamp": "2026-11-11T21:53:28.901296+00:00", "query": "oversized flannel shirt", "outcome": "completed", "status": 200, "duration_s": 2.23, "tokens": 638, "error": null}
 {"timestamp": "2026-11-11T21:53:30.949215+00:00", "query": "leather belt under $20", "outcome": "completed", "status": 200, "duration_s": 2.01, "tokens": 545, "error": null}
 ```
+
+## What It Costs
+
+I measured cost in tokens. The server reads the total token count before and after each run and logs the difference, so every request in logs/requests.jsonl has its own number. Over ten runs with the cache off, the average was 603.1 tokens per run (the lowest was 545 and the highest was 702). Each run makes two model calls, one for the outfit and one for the fit card.
+
+For 100 people a day, one run each: 603.1 tokens x 100 runs = 60,310 tokens a day. My key is on the free tier, so my actual spend is $0. A paid rate would be that token total times the price per token for my model, which I haven't looked up.
+
+The limit matters more than money here. With 2 model calls per run and 15 requests a minute, I can do about 7 runs a minute, so 100 runs in a burst would take around 14 minutes of pacing.
