@@ -246,3 +246,32 @@ history is what shows your criteria existed before your results did.
 units.
 
 `results/` is deliberately **not** in `.gitignore`.
+
+---
+
+## Capstone: running FitFindr as a local web service
+
+Python 3.11, 3.12, or 3.13 (not 3.14). Dependencies are pinned in requirements.txt. No model files to download, because the model is called over the API.
+
+From a fresh clone:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env        # then paste your GEMINI_API_KEY into .env
+python test.py
+PORT=5001 python serve.py
+```
+
+Port 5001 is because macOS uses port 5000 for AirPlay Receiver. On other machines you can leave PORT off.
+
+Send a request from a second terminal (activate the venv there too):
+
+```bash
+curl -X POST http://localhost:5001/ask -H 'Content-Type: application/json' -d '{"query": "vintage graphic tee under $30"}'
+```
+
+Every request writes one line to logs/requests.jsonl with the timestamp, query, outcome, status, duration in seconds, and tokens used.
+
+For measuring, start with the cache off: `AI201_CACHE=0 PORT=5001 python serve.py`
