@@ -336,40 +336,17 @@ never tested what happens if a wardrobe item is missing a field, like
 colors, which could break suggest_outfit when it builds the prompt. None of
 my five criteria covered this, and I ran out of time to add one.
 
-<!-- ═════════════════════════════════════════════════════════════════════
 
-     SUBMISSION CHECKLIST — unit 3
+<!-- ═══════════════════════ CAPSTONE PROJECT ═══════════════════════ -->
 
-       [ ] criteria.md has five numbered criteria, each with a target
-       [ ] Each criterion has a reason underneath it
-       [ ] All five unit 3 sections above have real content
-       [ ] Tool Inventory: all three tools, inputs WITH TYPES, a specific
-           return value, and the empty case
-       [ ] Planning Loop names the branch rule and agent.py::run_agent
-       [ ] Sample Run: one full query plus the three per-tool tests, as text
-       [ ] At least four new commits
-       [ ] Repository URL submitted — WRITE IT DOWN, you submit the same one
-           next unit
+# Capstone
 
-     SUBMISSION CHECKLIST — unit 4
+## What This Extends
 
-       [ ] mcp_server.py exists with one tool registered
-           (or a written record of exactly where the rewire broke)
-       [ ] Run Log — Before, five criteria, five tries each
-       [ ] Real output pasted underneath, naming file and function
-       [ ] A verdict on every criterion
-       [ ] A diagnosis for every miss, naming a place AND a mechanism
-       [ ] Loop Trace, with the MCP call visible in it
-       [ ] All three failure modes triggered and handled
-       [ ] One improvement, with Run Log — After in the same format
-       [ ] What's Still Broken
-       [ ] At least four new commits
-       [ ] The SAME repository URL as last unit
+This extends FitFindr. The agent itself will stay the same. What will be new is that it runs through serve.py and writes a log entry every time someone uses it.
 
-     Do not delete and recreate this repository. Your commit history is what
-     shows your criteria existed before your results did.
-     ═════════════════════════════════════════════════════════════════════ -->
+## The Shape
 
----
+Shape A: deploy and instrument. Before, FitFindr only ran in my terminal. It will run as a small web service, and each request will be saved to a log file with the time, the query, what happened, and how long it took. I'm running it locally (Path B), not hosting it.
 
-📖 **How to run this project: [RUNNING.md](RUNNING.md)**
+Out of scope: I'm not adding new tools or changing how search works. I'm not hosting it online. I'm not timing each individual tool, only the whole request. I'm also leaving the rate limiting and cache alone.
