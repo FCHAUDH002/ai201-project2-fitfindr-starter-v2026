@@ -439,3 +439,17 @@ trial 2 | body: [1,2] | status: 500 | new log lines: 0
 trial 2 | body: “hi” | status: 500 | new log lines: 0
 trial 2 | body: not json | status: 400 | new log lines: 1
 
+
+### Verdicts and Diagnoses
+
+**Criterion 1: MET.** All three trials logged 10 of 10 records with all four fields and a valid outcome. But crashes never reach the log, so this does not mean every request gets logged. Criterion 5 covers that.
+
+**Criterion 2: MISSED.** Both requests were logged as `stopped_early` in all three trials. The problem is the route in `serve.py`. When the model is unavailable, `run_agent` returns a normal session with an error attached. Then  `ask()` only checks whether an error exists, not what kind. The log has other clues, like different error text and 0 tokens for the dead-key run. But they are not in the `outcome` field I would filter on.
+
+**Criterion 3: MISSED.** All three trials got 9 of 10, and the target was 10 of 10. The problem is pacing in `generate.py`. Ten requests make 20 model calls, but the limit is 15 per minute. In trials 1 and 3, my own pacer paused about 43 seconds. In trial 2, the API rejected a call and the retry waited 60 seconds. Every other request took 2 to 4.3 seconds.
+
+**Criterion 4: MET.** The trials got 9, 10, and 9 of 10. Trials 1 and 3 each had one run over 700 tokens, so there is no room to spare. Output length varies because the temperature is 0.9.
+
+**Criterion 5: MISSED.** All three trials got 1 of 3. The problem is the route in `serve.py`. The code uses `get_json(silent=True) or {}` as a fallback, but a list or string counts as truthy, so the fallback never kicks in. Then `payload.get("query")` crashes before the code can return a 400 or write a log. Flask returns a 500 and nothing is recorded. Only invalid JSON passes, because it becomes `None` and the fallback works.
+
+**Pattern.** Criteria 2 and 5 both come from the route in `serve.py`, where `ask()` assumes every input will look normal. Criterion 3 is a separate issue in `generate.py`.
