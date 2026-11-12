@@ -395,3 +395,47 @@ How I ran the trials: all runs used AI201_CACHE=0. Before each trial I moved the
 | 4. At most 700 tokens in at least 9 of 10 runs | 9 of 10 | 9/10 | 10/10 | 9/10 | MET |
 | 5. Three malformed bodies get a 400 and a log record | 3 of 3 | 1/3 | 1/3 | 1/3 | MISSED |
 
+### Real output from one run
+
+**Criterion 1** (produced by `serve.py::log_request`, counted by `run_crit1.sh`, trial 1):
+
+new records: 10 (target 10)
+records with all fields and a valid outcome: 10
+completed | 3.45 | vintage graphic tee under $30
+completed | 2.53 | denim jacket under $50
+completed | 2.23 | platform sneakers size 8
+completed | 2.35 | 90s track jacket in size M
+completed | 2.48 | oversized flannel shirt
+completed | 2.23 | leather belt under $20
+stopped_early | 0.97 | designer ballgown size XXS under $5
+stopped_early | 0.53 | tuxedo size XXL under $3
+completed | 86.48 | denim jacket under $50
+bad_request | 0.0 |
+
+
+**Criterion 2** (produced by `serve.py::ask` with a broken key, `run_crit2.sh`, trial 1):
+
+{“timestamp”: “2026-11-12T02:17:36.357340+00:00”, “query”: “vintage graphic tee under $30”, “outcome”: “stopped_early”, “status”: 200, “duration_s”: 0.72, “tokens”: 0, “error”: “The model couldn’t be reached, so the outfit and caption steps didn’t run. ...”}
+{“timestamp”: “2026-11-12T02:17:36.904687+00:00”, “query”: “designer ballgown size XXS under $5”, “outcome”: “stopped_early”, “status”: 200, “duration_s”: 0.53, “tokens”: 0, “error”: “Nothing in the listings matched description ‘designer ballgown’, size XXS, ...”}
+
+
+**Criteria 3 and 4** (produced by `serve.py::ask` and `generate.py::generate`, listed from `logs/archive/trial1_criteria3_4.jsonl`):
+
+1 3.83 588 vintage graphic tee under $30
+2 2.07 599 denim jacket under $50
+3 2.06 557 platform sneakers size 8
+4 2.27 615 90s track jacket in size M
+5 2.07 639 silk slip dress in midi length under $40
+6 2.39 570 vintage graphic tee under $25
+7 2.94 652 denim jacket under $45
+8 45.43 618 platform sneakers size 9
+9 2.62 728 oversized flannel shirt
+10 2.66 542 leather belt under $20
+
+
+**Criterion 5** (produced by `serve.py::ask`, `run_crit5.sh`, trial 2):
+
+trial 2 | body: [1,2] | status: 500 | new log lines: 0
+trial 2 | body: “hi” | status: 500 | new log lines: 0
+trial 2 | body: not json | status: 400 | new log lines: 1
+
