@@ -77,34 +77,78 @@ should fail once that logic is in place.
 
 ---
 
-<!-- ─────────────────────────────────────────────────────────────────────────
-     UNIT 4 — read this before you change anything above.
+<!-- ═══════════════════════ CAPSTONE PROJECT ═══════════════════════ -->
 
-     If a criterion turns out to be BROKEN rather than merely unmet, you can
-     revise it, and that earns credit. But never delete or edit the original
-     line. Add the revision underneath it, like this:
+# Capstone criteria
 
-         ## 4. Something about the fit card
+All five criteria are run with AI201_CACHE=0. A cached answer never reaches
+the model, so it would skip the pacer and add zero tokens.
 
-         The fit card is different every time.
+## 1. Every request that reaches the route leaves a log record
 
-         **Why this target:** ...
+For 10 requests to POST /ask (matching queries, the impossible query, the
+empty wardrobe, and one with no query), the log has 10 new records. Each
+has a timestamp, the query, an outcome (`completed`, `stopped_early`, or
+`bad_request`), and `duration_s`. 10 of 10, in all 3 trials.
 
-         > **Revised in unit 4:** For 5 different items, the 5 fit cards share
-         > no opening sentence.
-         >
-         > **Why revised:** "different" wasn't checkable — two cards that
-         > differed by one word still counted. The new version is something I
-         > can actually score.
+**Why this target:** The log is the point of this extension. If one request
+is missing, I can't trust the log to explain what happened. Malformed
+bodies and crashes are tested separately in criterion 5.
 
-     That's a revision because the criterion couldn't be MEASURED.
+---
 
-     Lowering a target because you missed it is not a revision, and it costs
-     you the point:
+## 2. A bad API key gets a different outcome than an empty search
 
-         ✗ "I said the empty search stops it 5 of 5 times, but I got 3 of 5,
-            so 3 of 5 is more realistic."
+I break the key by changing one character of GEMINI_API_KEY in .env, then
+send a matching query. The `outcome` value in that log record is different
+from the `outcome` for the impossible query. 3 of 3 trials.
 
-     A number you missed stays where it is, gets diagnosed, and gets a fix
-     attempted. That's where the points are.
-     ───────────────────────────────────────────────────────────────────────── -->
+**Why this target:** On ModelUnavailable, run_agent puts "The model
+couldn't be reached" in session["error"]. I expect serve.py to log that as
+`stopped_early`, the same outcome as "nothing matched." The outcome field
+is what I'd scan or filter on, so if both runs show `stopped_early`, the
+log can't tell me at a glance whether to fix my key or my search.
+
+---
+
+## 3. Back-to-back requests finish in under 5 seconds
+
+For 10 matching requests sent one right after another, all 10 have a
+`duration_s` under 5. In all 3 trials.
+
+**Why this target:** A normal run takes about 2 to 3 seconds: 2 model calls
+plus starting a new MCP server process for the search. 5 seconds leaves
+room for that. What would make it fail is the pacer. Each run makes 2 model
+calls and the limit is 15 per minute, so 10 fast requests make 20 calls and
+some request has to wait.
+
+---
+
+## 4. A completed run uses at most 700 tokens
+
+For 10 completed runs, the `tokens` value in the log record is 700 or
+fewer in at least 9 of 10 runs. In all 3 trials.
+
+**Why this target:** The prompts are almost the same size every run, so the
+variation comes from the output. When suggest_outfit writes two outfits
+instead of one, its answer is longer, and that answer is also sent into
+create_fit_card's prompt, so both calls grow. At temperature 0.9 this
+happens often enough that it could fail. I allow 1 of 10 for a single long
+answer.
+
+---
+
+## 5. Malformed bodies get a 400 and a log record
+
+Three bad bodies sent to POST /ask each return a 400 with a message and
+leave a log record with outcome `bad_request`: a JSON array `[1,2]`, a JSON
+string `"hi"`, and the text `not json`. 3 of 3, in all 3 trials.
+
+**Why this target:** serve.py assumes the body is a dict. My Provenance
+Guard project crashed with a 500 on a JSON array for this same reason. A
+crash before logging is the worst case, because it leaves no record at
+all. I expect `not json` to pass already, since get_json(silent=True)
+turns it into {} and that gets a 400 for a missing query. The array and
+the string are the risky ones.
+
+---
