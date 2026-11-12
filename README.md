@@ -453,3 +453,22 @@ trial 2 | body: not json | status: 400 | new log lines: 1
 **Criterion 5: MISSED.** All three trials got 1 of 3. The problem is the route in `serve.py`. The code uses `get_json(silent=True) or {}` as a fallback, but a list or string counts as truthy, so the fallback never kicks in. Then `payload.get("query")` crashes before the code can return a 400 or write a log. Flask returns a 500 and nothing is recorded. Only invalid JSON passes, because it becomes `None` and the fallback works.
 
 **Pattern.** Criteria 2 and 5 both come from the route in `serve.py`, where `ask()` assumes every input will look normal. Criterion 3 is a separate issue in `generate.py`.
+
+
+## The Improvement
+
+**What I changed:** In serve.py, `ask()` used `request.get_json(silent=True) or {}` and then called `.get` on the result. A JSON array like `[1,2]` or a string like `"hi"` is truthy, so the `or {}` never replaced it, and `.get` crashed with an AttributeError before any logging ran. I changed it so that `None` becomes `{}` (so `not json` and `{}` behave exactly as before), and anything that isn't a dict returns a 400 and writes a `bad_request` log record.
+
+**Why I picked it:** A request that crashes and leaves no log record is the worst thing this extension can do, because the log is the whole point. My diagnosis named the exact line and the mechanism, and the fix is one check. I did not pick criterion 2 because it needs a new outcome value, which is more than one change. I did not pick criterion 3 because it comes from the rate limit in generate.py, which I put out of scope.
+
+### Run Log: After
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Every request that reaches the route is logged | 10 of 10 | 10/10 | 10/10 | 10/10 | MET |
+| 2. Bad key logs a different outcome than an empty search | 3 of 3 | no | no | no | MISSED |
+| 3. 10 back-to-back requests all under 5s | 10 of 10 | 9/10 | 8/10 | 9/10 | MISSED |
+| 4. At most 700 tokens in at least 9 of 10 runs | 9 of 10 | 10/10 | 10/10 | 10/10 | MET |
+| 5. Three malformed bodies get a 400 and a log record | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
+
+**Did it help, and how do I know:** Yes, for the thing I targeted. Criterion 5 went from 1 of 3 to 3 of 3 in all three trials, and `[1,2]` and `"hi"` now each return a 400 and leave exactly one log record. Criteria 1, 2, 3, and 4 have the same verdicts as before.
