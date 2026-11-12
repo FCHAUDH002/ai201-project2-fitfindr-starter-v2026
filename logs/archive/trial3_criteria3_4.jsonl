@@ -1,0 +1,10 @@
+{"timestamp": "2026-11-12T02:05:44.121650+00:00", "query": "vintage graphic tee under $30", "outcome": "completed", "status": 200, "duration_s": 2.7, "tokens": 579, "error": null}
+{"timestamp": "2026-11-12T02:05:46.049596+00:00", "query": "denim jacket under $50", "outcome": "completed", "status": 200, "duration_s": 1.9, "tokens": 555, "error": null}
+{"timestamp": "2026-11-12T02:05:48.021411+00:00", "query": "platform sneakers size 8", "outcome": "completed", "status": 200, "duration_s": 1.95, "tokens": 545, "error": null}
+{"timestamp": "2026-11-12T02:05:50.137826+00:00", "query": "90s track jacket in size M", "outcome": "completed", "status": 200, "duration_s": 2.09, "tokens": 619, "error": null}
+{"timestamp": "2026-11-12T02:05:52.466451+00:00", "query": "silk slip dress in midi length under $40", "outcome": "completed", "status": 200, "duration_s": 2.3, "tokens": 682, "error": null}
+{"timestamp": "2026-11-12T02:05:54.779479+00:00", "query": "vintage graphic tee under $25", "outcome": "completed", "status": 200, "duration_s": 2.29, "tokens": 574, "error": null}
+{"timestamp": "2026-11-12T02:05:57.464470+00:00", "query": "denim jacket under $45", "outcome": "completed", "status": 200, "duration_s": 2.66, "tokens": 561, "error": null}
+{"timestamp": "2026-11-12T02:06:43.372928+00:00", "query": "platform sneakers size 9", "outcome": "completed", "status": 200, "duration_s": 45.88, "tokens": 579, "error": null}
+{"timestamp": "2026-11-12T02:06:46.012280+00:00", "query": "oversized flannel shirt", "outcome": "completed", "status": 200, "duration_s": 2.6, "tokens": 719, "error": null}
+{"timestamp": "2026-11-12T02:06:48.164911+00:00", "query": "leather belt under $20", "outcome": "completed", "status": 200, "duration_s": 2.13, "tokens": 541, "error": null}
