@@ -128,7 +128,13 @@ def ask():
     """
     started = time.time()
     
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if payload is None:
+        payload = {}
+    if not isinstance(payload, dict):
+        log_request("", "bad_request", started, 400, error="body is not a JSON object")
+        return jsonify({"error": "Send a JSON object with a 'query' field, e.g. "
+                                 '{"query": "vintage graphic tee under $30"}'}), 400
     query = (payload.get("query") or "").strip()
     if not query:
         log_request(query, "bad_request", started, 400, error="missing query")
