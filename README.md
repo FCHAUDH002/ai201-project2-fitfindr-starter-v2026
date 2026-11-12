@@ -350,6 +350,7 @@ This extends FitFindr. The agent itself will stay the same. What will be new is 
 Shape A: deploy and instrument. Before, FitFindr only ran in my terminal. It will run as a small web service, and each request will be saved to a log file with the time, the query, what happened, and how long it took. I'm running it locally (Path B), not hosting it.
 
 Out of scope: I'm not adding new tools or changing how search works. I'm not hosting it online. I'm not timing each individual tool, only the whole request. I'm also leaving the rate limiting and cache alone.
+
 ## Running It
 
 I run FitFindr as a local web service (Path B). The start command and setup steps are in RUNNING.md. I tested them from a clean clone of my repo, and they worked.
@@ -412,12 +413,10 @@ stopped_early | 0.53 | tuxedo size XXL under $3
 completed | 86.48 | denim jacket under $50
 bad_request | 0.0 |
 
-
 **Criterion 2** (produced by `serve.py::ask` with a broken key, `run_crit2.sh`, trial 1):
 
 {“timestamp”: “2026-11-12T02:17:36.357340+00:00”, “query”: “vintage graphic tee under $30”, “outcome”: “stopped_early”, “status”: 200, “duration_s”: 0.72, “tokens”: 0, “error”: “The model couldn’t be reached, so the outfit and caption steps didn’t run. ...”}
 {“timestamp”: “2026-11-12T02:17:36.904687+00:00”, “query”: “designer ballgown size XXS under $5”, “outcome”: “stopped_early”, “status”: 200, “duration_s”: 0.53, “tokens”: 0, “error”: “Nothing in the listings matched description ‘designer ballgown’, size XXS, ...”}
-
 
 **Criteria 3 and 4** (produced by `serve.py::ask` and `generate.py::generate`, listed from `logs/archive/trial1_criteria3_4.jsonl`):
 
@@ -432,13 +431,11 @@ bad_request | 0.0 |
 9 2.62 728 oversized flannel shirt
 10 2.66 542 leather belt under $20
 
-
 **Criterion 5** (produced by `serve.py::ask`, `run_crit5.sh`, trial 2):
 
 trial 2 | body: [1,2] | status: 500 | new log lines: 0
 trial 2 | body: “hi” | status: 500 | new log lines: 0
 trial 2 | body: not json | status: 400 | new log lines: 1
-
 
 ### Verdicts and Diagnoses
 
@@ -453,7 +450,6 @@ trial 2 | body: not json | status: 400 | new log lines: 1
 **Criterion 5: MISSED.** All three trials got 1 of 3. The problem is the route in `serve.py`. The code uses `get_json(silent=True) or {}` as a fallback, but a list or string counts as truthy, so the fallback never kicks in. Then `payload.get("query")` crashes before the code can return a 400 or write a log. Flask returns a 500 and nothing is recorded. Only invalid JSON passes, because it becomes `None` and the fallback works.
 
 **Pattern.** Criteria 2 and 5 both come from the route in `serve.py`, where `ask()` assumes every input will look normal. Criterion 3 is a separate issue in `generate.py`.
-
 
 ## The Improvement
 
@@ -472,3 +468,27 @@ trial 2 | body: not json | status: 400 | new log lines: 1
 | 5. Three malformed bodies get a 400 and a log record | 3 of 3 | 3/3 | 3/3 | 3/3 | MET |
 
 **Did it help, and how do I know:** Yes, for the thing I targeted. Criterion 5 went from 1 of 3 to 3 of 3 in all three trials, and `[1,2]` and `"hi"` now each return a 400 and leave exactly one log record. Criteria 1, 2, 3, and 4 have the same verdicts as before.
+
+## What's Still Broken
+
+**Criterion 2 (bad key looks like an empty search).** Both cases still log `stopped_early`. `run_agent` catches the model error and returns a normal session with an error message, and `ask()` only checks whether an error exists. I would add a `model_unavailable` outcome by checking if the error starts with "The model couldn't be reached." I stopped because that is a second change, and the unit allows one.
+
+**Criterion 3 (10 requests under 5 seconds).** Ten requests make 20 model calls, which is over the limit of 15 per minute, so one or two requests always wait 40 to 60 seconds. Sometimes it was my own pacer in generate.py, and once it was the API returning a 429. I can't fix this without changing the pacing or the free-tier limit, which I put out of scope.
+
+**What my log can't tell me.** It only records total time per request, so it can't tell a pacer wait from a slow model.
+
+**What I would do first with another unit.** Add the `model_unavailable` outcome. It is a small change, and it fixes the one place where the log gives the wrong answer to "should I fix my key or my search?"
+
+## How I Used AI
+
+**Moment 1**
+
+- *What I asked for:* Whether someone could check each of my five criteria from the sentence alone.
+- *What came back:* Criterion 2 would pass with no code change, because the error text already differed between a bad key and an empty search. Criteria 3 (15 seconds) and 4 (1,000 tokens) were also too easy compared to my own data.
+- *What I changed:* I rewrote criterion 2 to check the `outcome` field, and tightened 3 to 5 seconds and 4 to 700 tokens.
+
+**Moment 2**
+
+- *What I asked for:* Why one request in each trial took 45 to 63 seconds.
+- *What came back:* A guess that it was my pacer. The server terminal showed that was true for two trials, but in the third the API itself rejected a call.
+- *What I changed:* I wrote two causes in my diagnosis instead of one.
