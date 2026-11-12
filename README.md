@@ -380,3 +380,18 @@ I measured cost in tokens. The server reads the total token count before and aft
 For 100 people a day, one run each: 603.1 tokens x 100 runs = 60,310 tokens a day. My key is on the free tier, so my actual spend is $0. A paid rate would be that token total times the price per token for my model, which I haven't looked up.
 
 The limit matters more than money here. With 2 model calls per run and 15 requests a minute, I can do about 7 runs a minute, so 100 runs in a burst would take around 14 minutes of pacing.
+
+## Run Log and Verdicts
+
+How I ran the trials: all runs used AI201_CACHE=0. Before each trial I moved the old log to logs/archive/ so each trial started with an empty logs/requests.jsonl. The targets for criteria 3 and 4 come from the ten-request run in Milestone 3 (about 2.3s for 9 of 10 requests, 603 tokens on average). For criterion 2 I broke the key by changing one character of GEMINI_API_KEY, restarted the server, and put the key back afterward. For criterion 5 I sent the three bodies with curl, using Content-Type: application/json.
+
+### Run Log: Before
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Every request that reaches the route is logged | 10 of 10 | 10/10 | 10/10 | 10/10 | MET |
+| 2. Bad key logs a different outcome than an empty search | 3 of 3 | not different | not different | not different | MISSED |
+| 3. 10 back-to-back requests all under 5s | 10 of 10 | 9/10 | 9/10 | 9/10 | MISSED |
+| 4. At most 700 tokens in at least 9 of 10 runs | 9 of 10 | 9/10 | 10/10 | 9/10 | MET |
+| 5. Three malformed bodies get a 400 and a log record | 3 of 3 | 1/3 | 1/3 | 1/3 | MISSED |
+
