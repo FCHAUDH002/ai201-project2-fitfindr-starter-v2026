@@ -4,7 +4,7 @@
 URL=http://localhost:5001/ask
 H='Content-Type: application/json'
 mkdir -p logs/archive
-[ -f logs/requests.jsonl ] && mv logs/requests.jsonl logs/archive/requests_before_crit2_trial$1.jsonl
+[ -f logs/requests.jsonl ] && mv logs/requests.jsonl logs/archive/after_requests_before_crit2_trial$1.jsonl
 curl -s -o /dev/null -X POST $URL -H "$H" -d '{"query": "vintage graphic tee under $30"}'
 curl -s -o /dev/null -X POST $URL -H "$H" -d '{"query": "designer ballgown size XXS under $5"}'
 python3 - <<PY

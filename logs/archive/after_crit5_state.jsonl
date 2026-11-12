@@ -1,0 +1,19 @@
+{"timestamp": "2026-11-12T02:38:35.752527+00:00", "query": "vintage graphic tee under $30", "outcome": "completed", "status": 200, "duration_s": 3.38, "tokens": 590, "error": null}
+{"timestamp": "2026-11-12T02:38:37.852311+00:00", "query": "denim jacket under $50", "outcome": "completed", "status": 200, "duration_s": 2.07, "tokens": 690, "error": null}
+{"timestamp": "2026-11-12T02:38:41.331094+00:00", "query": "platform sneakers size 8", "outcome": "completed", "status": 200, "duration_s": 3.44, "tokens": 554, "error": null}
+{"timestamp": "2026-11-12T02:38:43.997209+00:00", "query": "90s track jacket in size M", "outcome": "completed", "status": 200, "duration_s": 2.64, "tokens": 615, "error": null}
+{"timestamp": "2026-11-12T02:38:46.537241+00:00", "query": "oversized flannel shirt", "outcome": "completed", "status": 200, "duration_s": 2.51, "tokens": 683, "error": null}
+{"timestamp": "2026-11-12T02:38:48.854994+00:00", "query": "leather belt under $20", "outcome": "completed", "status": 200, "duration_s": 2.28, "tokens": 554, "error": null}
+{"timestamp": "2026-11-12T02:38:49.417554+00:00", "query": "designer ballgown size XXS under $5", "outcome": "stopped_early", "status": 200, "duration_s": 0.54, "tokens": 0, "error": "Nothing in the listings matched description 'designer ballgown', size XXS, under $5.\nThings to change: try broader words \u2014 'jacket' finds more than 'cropped corduroy jacket'; drop the size, or try a neighbouring one; raise the price ceiling above $5."}
+{"timestamp": "2026-11-12T02:38:49.936049+00:00", "query": "tuxedo size XXL under $3", "outcome": "stopped_early", "status": 200, "duration_s": 0.5, "tokens": 0, "error": "Nothing in the listings matched description 'tuxedo', size XXL, under $3.\nThings to change: try broader words \u2014 'jacket' finds more than 'cropped corduroy jacket'; drop the size, or try a neighbouring one; raise the price ceiling above $3."}
+{"timestamp": "2026-11-12T02:38:51.991089+00:00", "query": "denim jacket under $50", "outcome": "completed", "status": 200, "duration_s": 2.03, "tokens": 349, "error": null}
+{"timestamp": "2026-11-12T02:38:52.018221+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "missing query"}
+{"timestamp": "2026-11-12T04:22:08.239887+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "body is not a JSON object"}
+{"timestamp": "2026-11-12T04:22:08.282056+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "body is not a JSON object"}
+{"timestamp": "2026-11-12T04:22:08.308511+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "missing query"}
+{"timestamp": "2026-11-12T04:22:08.341071+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "body is not a JSON object"}
+{"timestamp": "2026-11-12T04:22:08.365648+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "body is not a JSON object"}
+{"timestamp": "2026-11-12T04:22:08.391473+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "missing query"}
+{"timestamp": "2026-11-12T04:22:08.423396+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "body is not a JSON object"}
+{"timestamp": "2026-11-12T04:22:08.448487+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "body is not a JSON object"}
+{"timestamp": "2026-11-12T04:22:08.473537+00:00", "query": "", "outcome": "bad_request", "status": 400, "duration_s": 0.0, "tokens": null, "error": "missing query"}

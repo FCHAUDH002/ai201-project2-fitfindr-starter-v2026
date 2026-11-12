@@ -2,7 +2,7 @@
 # usage: ./run_capstone.sh <trial number>
 # start the server first: AI201_CACHE=0 PORT=5001 python3 serve.py
 mkdir -p logs/archive
-[ -f logs/requests.jsonl ] && mv logs/requests.jsonl logs/archive/requests_before_trial$1.jsonl
+[ -f logs/requests.jsonl ] && mv logs/requests.jsonl logs/archive/after_requests_before_trial$1.jsonl
 
 URL=http://localhost:5001/ask
 H='Content-Type: application/json'
@@ -11,7 +11,7 @@ H='Content-Type: application/json'
 for q in 'vintage graphic tee under $30' 'denim jacket under $50' 'platform sneakers size 8' '90s track jacket in size M' 'silk slip dress in midi length under $40' 'vintage graphic tee under $25' 'denim jacket under $45' 'platform sneakers size 9' 'oversized flannel shirt' 'leather belt under $20'; do
   curl -s -X POST $URL -H "$H" -d "{\"query\": \"$q\"}" > /dev/null
 done
-cp logs/requests.jsonl logs/archive/trial$1_criteria3_4.jsonl
+cp logs/requests.jsonl logs/archive/after_trial$1_criteria3_4.jsonl
 
 python3 - <<PY
 import json
